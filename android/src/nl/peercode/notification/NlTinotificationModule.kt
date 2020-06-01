@@ -1,4 +1,4 @@
-package nl.peercode.notification
+package nl.tinotification
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -20,12 +20,12 @@ import java.util.*
 // https://dev.to/miga/using-android-studio-to-develop-titanium-modules-2jc4
 // https://jira.appcelerator.org/browse/TIMOB-25896 (Hierin een ZIP file met Kotlin module)
 
-const val LCAT = "PeercodeNotification"
-const val MY_CHANNEL_ID = "PeercodeNotification"
+const val LCAT = "Tinotification"
+const val MY_CHANNEL_ID = "Tinotification"
 const val MY_CHANNEL_NAME = "notifications"
 
-@Kroll.module(name = "NlPeercodeNotification", id = "nl.peercode.notification")
-class NlPeercodeNotificationModule : KrollModule() {
+@Kroll.module(name = "NlTinotification", id = "nl.tinotification")
+class NlTinotificationModule : KrollModule() {
 
     companion object {
 

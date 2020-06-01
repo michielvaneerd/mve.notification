@@ -13,16 +13,16 @@ win.add(label);
 win.open();
 
 // TODO: write your module tests here
-var nl_peercode_notification = require('nl.peercode.notification');
-Ti.API.info("module is => " + nl_peercode_notification);
+var nl_tinotification = require('nl.tinotification');
+Ti.API.info("module is => " + nl_tinotification);
 
-label.text = nl_peercode_notification.example();
+label.text = nl_tinotification.example();
 
-Ti.API.info("module exampleProp is => " + nl_peercode_notification.exampleProp);
-nl_peercode_notification.exampleProp = "This is a test value";
+Ti.API.info("module exampleProp is => " + nl_tinotification.exampleProp);
+nl_tinotification.exampleProp = "This is a test value";
 
 if (Ti.Platform.name == "android") {
-	var proxy = nl_peercode_notification.createExample({
+	var proxy = nl_tinotification.createExample({
 		message: "Creating an example Proxy",
 		backgroundColor: "red",
 		width: 100,

@@ -64,7 +64,7 @@ Register your module with your application by editing `tiapp.xml` and adding you
 Example:
 
 <modules>
-  <module version="1.0.0">nl.peercode.notification</module>
+  <module version="1.0.0">nl.tinotification</module>
 </modules>
 
 When you run your project, the compiler will combine your module along with its dependencies
@@ -77,14 +77,14 @@ To use your module in code, you will need to require it.
 ### ES6+ (recommended)
 
 ```js
-import MyModule from 'nl.peercode.notification';
+import MyModule from 'nl.tinotification';
 MyModule.foo();
 ```
 
 ### ES5
 
 ```js
-var MyModule = require('nl.peercode.notification');
+var MyModule = require('nl.tinotification');
 MyModule.foo();
 ```
 

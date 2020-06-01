@@ -1,27 +1,27 @@
-# nl.peercode.notification Module
+# nl.tinotification Module
 
 ## Description
 
 TODO: Enter your module description here
 
-## Accessing the nl.peercode.notification Module
+## Accessing the nl.tinotification Module
 
 To access this module from JavaScript, you would do the following:
 
-    var nl_peercode_notification = require("nl.peercode.notification");
+    var nl_tinotification = require("nl.tinotification");
 
-The nl_peercode_notification variable is a reference to the Module object.
+The nl_tinotification variable is a reference to the Module object.
 
 ## Reference
 
 TODO: If your module has an API, you should document
 the reference here.
 
-### nl_peercode_notification.function
+### nl_tinotification.function
 
 TODO: This is an example of a module function.
 
-### nl_peercode_notification.property
+### nl_tinotification.property
 
 TODO: This is an example of a module property.
 

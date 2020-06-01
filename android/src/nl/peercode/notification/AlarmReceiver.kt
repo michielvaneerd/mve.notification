@@ -1,4 +1,4 @@
-package nl.peercode.notification
+package nl.tinotification
 
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -17,19 +17,19 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
 
-        val info = NlPeercodeNotificationModule.NotificationInfo()
+        val info = NlTinotificationModule.NotificationInfo()
 
-        info.requestCode = intent.getIntExtra(NlPeercodeNotificationModule.NOTIFICATION_REQUEST_CODE, 0)
-        info.content = intent.getStringExtra(NlPeercodeNotificationModule.NOTIFICATION_CONTENT)
-        info.title = intent.getStringExtra(NlPeercodeNotificationModule.NOTIFICATION_TITLE)
+        info.requestCode = intent.getIntExtra(NlTinotificationModule.NOTIFICATION_REQUEST_CODE, 0)
+        info.content = intent.getStringExtra(NlTinotificationModule.NOTIFICATION_CONTENT)
+        info.title = intent.getStringExtra(NlTinotificationModule.NOTIFICATION_TITLE)
         // Icon must be white on transparent background
-        info.icon = intent.getIntExtra(NlPeercodeNotificationModule.NOTIFICATION_ICON, R.drawable.ic_stat_onesignal_default)
-        info.exact = intent.getBooleanExtra(NlPeercodeNotificationModule.NOTIFICATION_EXACT, false)
-        info.repeatInSeconds = intent.getIntExtra(NlPeercodeNotificationModule.NOTIFICATION_REPEAT_SEC, 0)
-        info.date = intent.getSerializableExtra(NlPeercodeNotificationModule.NOTIFICATION_DATE) as Date
+        info.icon = intent.getIntExtra(NlTinotificationModule.NOTIFICATION_ICON, R.drawable.ic_stat_onesignal_default)
+        info.exact = intent.getBooleanExtra(NlTinotificationModule.NOTIFICATION_EXACT, false)
+        info.repeatInSeconds = intent.getIntExtra(NlTinotificationModule.NOTIFICATION_REPEAT_SEC, 0)
+        info.date = intent.getSerializableExtra(NlTinotificationModule.NOTIFICATION_DATE) as Date
 
-        if (intent.hasExtra(NlPeercodeNotificationModule.NOTIFICATION_REPEAT)) {
-            info.repeat = intent.getStringExtra(NlPeercodeNotificationModule.NOTIFICATION_REPEAT)
+        if (intent.hasExtra(NlTinotificationModule.NOTIFICATION_REPEAT)) {
+            info.repeat = intent.getStringExtra(NlTinotificationModule.NOTIFICATION_REPEAT)
         }
 
         // Start or bring to front main activity:
@@ -72,7 +72,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
             Log.d(LCAT, "Scheduling next exact repeating notification for ${info.date} for requestCode ${info.requestCode}")
 
-            NlPeercodeNotificationModule.schedule(info)
+            NlTinotificationModule.schedule(info)
         }
     }
 
