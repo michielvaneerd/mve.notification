@@ -64,6 +64,12 @@ class NlTinotificationModule : KrollModule() {
         @Kroll.constant
         const val YEARLY = "yearly"
 
+        @Kroll.constant
+        const val INEXACT = "inexact"
+        @Kroll.constant
+        const val EXACT = "exact"
+        @Kroll.constant
+        const val REPEAT = "repeat"
 
 
         @JvmStatic
@@ -91,7 +97,7 @@ class NlTinotificationModule : KrollModule() {
             intent.putExtra(NOTIFICATION_CONTENT, info.content)
             intent.putExtra(NOTIFICATION_ICON, info.icon)
             intent.putExtra(NOTIFICATION_REQUEST_CODE, info.requestCode)
-            intent.putExtra(NOTIFICATION_EXACT, info.exact) // not required, but default = false
+            intent.putExtra(NOTIFICATION_EXACT, info.exact)
             intent.putExtra(NOTIFICATION_REPEAT_SEC, info.repeatInSeconds)
             intent.putExtra(NOTIFICATION_DATE, info.date)
 
@@ -102,21 +108,34 @@ class NlTinotificationModule : KrollModule() {
             val pendingIntent = PendingIntent.getBroadcast(context, info.requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
             val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-            if (info.repeatInSeconds > 0 && !info.exact) {
-                Log.d(LCAT, "Scheduling inexact repeating notification for requestCode ${info.requestCode}")
-                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, info.date.time, (info.repeatInSeconds * 1000).toLong(), pendingIntent)
-            } else {
-                if (info.exact) {
-                    Log.d(LCAT, "Scheduling one exact notification for requestCode ${info.requestCode}")
-                    if (info.repeatInSeconds > 0) {
-                        Log.d(LCAT, "Repeating is set as well, next exact notification will be scheduled inside the BroadcastReceiver for requestCode ${info.requestCode}")
+            if (info.repeatInSeconds > 0) {
+                when (info.exact) {
+                    REPEAT -> {
+                        Log.d(LCAT, "Scheduling inexact repeating notification for ${info.date} #${info.requestCode}")
+                        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, info.date.time, (info.repeatInSeconds * 1000).toLong(), pendingIntent)
                     }
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
-                } else {
-                    Log.d(LCAT, "Scheduling one inexact notification for requestCode ${info.requestCode}")
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
+                    INEXACT -> {
+                        Log.d(LCAT, "Scheduling one inexact repeating notification for ${info.date} #${info.requestCode}")
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
+                    }
+                    else -> {
+                        Log.d(LCAT, "Scheduling one exact repeating notification for ${info.date} #${info.requestCode}")
+                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
+                    }
+                }
+            } else {
+                when (info.exact) {
+                    INEXACT -> {
+                        Log.d(LCAT, "Scheduling one inexact notification for ${info.date} #${info.requestCode}")
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
+                    }
+                    else -> {
+                        Log.d(LCAT, "Scheduling one exact notification for ${info.date} #${info.requestCode}")
+                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
+                    }
                 }
             }
+
         }
     }
 
@@ -130,7 +149,7 @@ class NlTinotificationModule : KrollModule() {
         var content: String = ""
         var date: Date = Date()
         var icon: Int = R.drawable.ic_stat_onesignal_default
-        var exact: Boolean = false
+        var exact: String = EXACT
         var requestCode: Int = 0
     }
 
@@ -173,7 +192,7 @@ class NlTinotificationModule : KrollModule() {
         info.requestCode = arg.getInt(NOTIFICATION_REQUEST_CODE)
 
         if (arg.containsKeyAndNotNull(NOTIFICATION_EXACT)) {
-            info.exact = arg.getBoolean(NOTIFICATION_EXACT)
+            info.exact = arg.getString(NOTIFICATION_EXACT)
         }
         if (arg.containsKeyAndNotNull(NOTIFICATION_REPEAT_SEC)) {
             info.repeatInSeconds = arg.getInt(NOTIFICATION_REPEAT_SEC)

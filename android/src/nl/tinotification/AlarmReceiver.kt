@@ -24,7 +24,7 @@ class AlarmReceiver : BroadcastReceiver() {
         info.title = intent.getStringExtra(NlTinotificationModule.NOTIFICATION_TITLE)
         // Icon must be white on transparent background
         info.icon = intent.getIntExtra(NlTinotificationModule.NOTIFICATION_ICON, R.drawable.ic_stat_onesignal_default)
-        info.exact = intent.getBooleanExtra(NlTinotificationModule.NOTIFICATION_EXACT, false)
+        info.exact = intent.getStringExtra(NlTinotificationModule.NOTIFICATION_EXACT)
         info.repeatInSeconds = intent.getIntExtra(NlTinotificationModule.NOTIFICATION_REPEAT_SEC, 0)
         info.date = intent.getSerializableExtra(NlTinotificationModule.NOTIFICATION_DATE) as Date
 
@@ -50,9 +50,9 @@ class AlarmReceiver : BroadcastReceiver() {
                 .setAutoCancel(true)
 
         NotificationManagerCompat.from(context).notify(info.requestCode, builder.build())
-        Log.d(LCAT, "Notification displayed for requestCode ${info.requestCode}")
+        Log.d(LCAT, "Notification displayed for #${info.requestCode}")
 
-        if (info.repeatInSeconds > 0 && info.exact) {
+        if (info.repeatInSeconds > 0 && arrayOf(NlTinotificationModule.EXACT, NlTinotificationModule.INEXACT).contains(info.exact)) {
 
             val repeatInMs = info.repeatInSeconds * 1000;
 
