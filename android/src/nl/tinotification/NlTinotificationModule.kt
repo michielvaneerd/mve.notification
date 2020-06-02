@@ -20,8 +20,8 @@ import java.util.*
 // https://dev.to/miga/using-android-studio-to-develop-titanium-modules-2jc4
 // https://jira.appcelerator.org/browse/TIMOB-25896 (Hierin een ZIP file met Kotlin module)
 
-const val LCAT = "Tinotification"
-const val MY_CHANNEL_ID = "Tinotification"
+const val LCAT = "NlTinotification"
+const val MY_CHANNEL_ID = "NlTinotification"
 const val MY_CHANNEL_NAME = "notifications"
 
 @Kroll.module(name = "NlTinotification", id = "nl.tinotification")
@@ -188,6 +188,7 @@ class NlTinotificationModule : KrollModule() {
         info.title = arg.getString(NOTIFICATION_TITLE)
         info.content = arg.getString(NOTIFICATION_CONTENT)
         info.date = TiConvert.toDate(arg.getValue(NOTIFICATION_DATE))
+        // https://romannurik.github.io/AndroidAssetStudio/icons-notification
         info.icon = arg.getInt(NOTIFICATION_ICON)
         info.requestCode = arg.getInt(NOTIFICATION_REQUEST_CODE)
 

@@ -9,8 +9,16 @@
 	<android xmlns:android="http://schemas.android.com/apk/res/android">
         <manifest>
             <application>
-                <receiver android:name="nl.tinotification.AlarmReceiver" android:exported="true" android:enabled="true" />
+                <receiver android:name="nl.tinotification.AlarmReceiver" />
+                <receiver android:name="nl.tinotification.BootReceiver">
+                    <intent-filter>
+                        <action android:name="android.intent.action.BOOT_COMPLETED" />
+                        <!-- https://stackoverflow.com/a/9360557/1294832 -->
+                        <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                    </intent-filter>
+                </receiver>
             </application>
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
             <uses-permission android:name="android.permission.WAKE_LOCK" /><!-- Necessary? -->
         </manifest>
 	</android>
