@@ -4,8 +4,11 @@ import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollModule
@@ -39,6 +42,14 @@ class NlTinotificationModule : KrollModule() {
         const val NOTIFICATION_REPEAT_SEC = "repeatInSeconds"
         const val NOTIFICATION_REPEAT = "repeat"
         const val NOTIFICATION_EXACT = "exact"
+        const val NOTIFICATION_SOUND = "sound"
+
+        const val CHANNEL_NAME = "channelName"
+        const val CHANNEL_ID = "channelId"
+        const val CHANNEL_CUSTOM_SOUND = "customSound"
+        const val CHANNEL_IMPORTANCE = "importance"
+        const val CHANNEL_LIGHTS = "lights"
+        const val CHANNEL_VIBRATE = "vibrate"
 
         // TODO: yearly and monthly alarms should ALWAYS be one time alarms and in receiver schedule next one!
         @Kroll.constant
@@ -71,24 +82,28 @@ class NlTinotificationModule : KrollModule() {
         @Kroll.constant
         const val REPEAT = "repeat"
 
+        @Kroll.constant
+        const val IMPORTANCE_DEFAULT = "default"
+        @Kroll.constant
+        const val IMPORTANCE_HIGH = "high"
+        @Kroll.constant
+        const val IMPORTANCE_LOW = "low"
+
+
 
         @JvmStatic
         @Kroll.onAppCreate
         fun onAppCreate(app: TiApplication) {
+
+        }
+
+        fun schedule(info: NotificationInfo) {
+
             // https://developer.android.com/training/notify-user/build-notification
             // Note:
             // Because you must create the notification channel before posting any notifications on Android 8.0 and higher,
             // you should execute this code as soon as your app starts.
             // It's safe to call this repeatedly because creating an existing notification channel performs no operation.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val channel = NotificationChannel(MY_CHANNEL_ID, MY_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
-                val notificationManager: NotificationManager = app
-                        .applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.createNotificationChannel(channel)
-            }
-        }
-
-        fun schedule(info: NotificationInfo) {
 
             val context = TiApplication.getInstance().applicationContext
 
@@ -100,6 +115,12 @@ class NlTinotificationModule : KrollModule() {
             intent.putExtra(NOTIFICATION_EXACT, info.exact)
             intent.putExtra(NOTIFICATION_REPEAT_SEC, info.repeatInSeconds)
             intent.putExtra(NOTIFICATION_DATE, info.date)
+            intent.putExtra(CHANNEL_ID, info.channelId)
+            intent.putExtra(CHANNEL_CUSTOM_SOUND, info.customSound)
+            intent.putExtra(CHANNEL_IMPORTANCE, info.importance)
+            intent.putExtra(NOTIFICATION_SOUND, info.sound)
+            intent.putExtra(CHANNEL_LIGHTS, info.lights)
+            intent.putExtra(CHANNEL_VIBRATE, info.vibrate)
 
             if (info.repeat != "") {
                 intent.putExtra(NOTIFICATION_REPEAT, info.repeat)
@@ -139,9 +160,6 @@ class NlTinotificationModule : KrollModule() {
         }
     }
 
-    // HIer intent extras + krolldict values naar toe mappen en dan doorgeven aan schedile
-    // TODO: repeat of repeat_ms (repeat is dan een string, zoals daily, weekly)
-    // omdat je soms dailight saving time hebt, en dan klopt de ms variant niet!
     class NotificationInfo {
         var repeatInSeconds: Int = 0
         var repeat: String = ""
@@ -151,6 +169,61 @@ class NlTinotificationModule : KrollModule() {
         var icon: Int = R.drawable.ic_stat_onesignal_default
         var exact: String = EXACT
         var requestCode: Int = 0
+        var sound: Boolean = true
+
+        // Required for >= Build.VERSION_CODES.O
+        var channelId: String = MY_CHANNEL_ID
+
+        // Not active for >= Build.VERSION_CODES.O (these must be set on the channel instead)
+        var customSound: String = ""
+        var importance: String = IMPORTANCE_DEFAULT
+        var lights: Boolean = true
+        var vibrate: Boolean = true
+    }
+
+    @Kroll.method
+    fun setChannel(arg: KrollDict) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            val id = if (arg.containsKeyAndNotNull(CHANNEL_ID)) arg.getString(CHANNEL_ID) else MY_CHANNEL_ID
+            val name = if (arg.containsKeyAndNotNull(CHANNEL_NAME)) arg.getString(CHANNEL_NAME) else MY_CHANNEL_NAME
+            var importance = NotificationManager.IMPORTANCE_DEFAULT
+            if (arg.containsKeyAndNotNull(CHANNEL_IMPORTANCE)) {
+                importance = when (arg.getString(CHANNEL_IMPORTANCE)) {
+                    IMPORTANCE_HIGH -> NotificationManager.IMPORTANCE_HIGH
+                    IMPORTANCE_LOW -> NotificationManager.IMPORTANCE_LOW
+                    else -> NotificationManager.IMPORTANCE_DEFAULT
+                }
+            }
+
+            val channel = NotificationChannel(id, name, importance)
+
+            // Note: setting a customSound overrides setting sound
+            if (arg.containsKeyAndNotNull(CHANNEL_CUSTOM_SOUND)) {
+                val customSound = arg.getString(CHANNEL_CUSTOM_SOUND)
+                Log.d(LCAT, "Setting custom sound to ${customSound}")
+                channel.setSound(Uri.parse(customSound),
+                        AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION).build())
+            } else if (arg.containsKeyAndNotNull(NOTIFICATION_SOUND) && !arg.getBoolean(NOTIFICATION_SOUND)) {
+                channel.setSound(null, null)
+            }
+
+            if (arg.containsKeyAndNotNull(CHANNEL_LIGHTS)) {
+                channel.enableLights(arg.getBoolean(CHANNEL_LIGHTS))
+            }
+
+            if (arg.containsKeyAndNotNull(CHANNEL_VIBRATE)) {
+                channel.enableVibration(arg.getBoolean(CHANNEL_VIBRATE))
+            }
+
+            val notificationManager: NotificationManager = TiApplication.getInstance().applicationContext
+                    .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+
+        }
     }
 
     // Om deze te cancellen moet je dezelfde pendingintent "terughalen", dwz dezelfde requestCode en deze FLAG.
@@ -192,12 +265,38 @@ class NlTinotificationModule : KrollModule() {
         info.icon = arg.getInt(NOTIFICATION_ICON)
         info.requestCode = arg.getInt(NOTIFICATION_REQUEST_CODE)
 
+        if (arg.containsKeyAndNotNull(CHANNEL_LIGHTS)) {
+            info.lights = arg.getBoolean(CHANNEL_LIGHTS)
+        }
+
+        if (arg.containsKeyAndNotNull(CHANNEL_VIBRATE)) {
+            info.vibrate = arg.getBoolean(CHANNEL_VIBRATE)
+        }
+
+        if (arg.containsKeyAndNotNull(NOTIFICATION_SOUND)) {
+            info.sound = arg.getBoolean(NOTIFICATION_SOUND)
+        }
+
+        if (arg.containsKeyAndNotNull(CHANNEL_CUSTOM_SOUND)) {
+            info.customSound = arg.getString(CHANNEL_CUSTOM_SOUND)
+        }
+
+        if (arg.containsKeyAndNotNull(CHANNEL_ID)) {
+            info.channelId = arg.getString(CHANNEL_ID)
+        }
+
+        if (arg.containsKeyAndNotNull(CHANNEL_IMPORTANCE)) {
+            info.importance = arg.getString(CHANNEL_IMPORTANCE)
+        }
+
         if (arg.containsKeyAndNotNull(NOTIFICATION_EXACT)) {
             info.exact = arg.getString(NOTIFICATION_EXACT)
         }
+
         if (arg.containsKeyAndNotNull(NOTIFICATION_REPEAT_SEC)) {
             info.repeatInSeconds = arg.getInt(NOTIFICATION_REPEAT_SEC)
         }
+
         if (arg.containsKeyAndNotNull(NOTIFICATION_REPEAT)) {
             info.repeat = arg.getString(NOTIFICATION_REPEAT)
             // Note: if you specify both repeat and repeatInSeconds, then repeat will override repeatInSeconds!
