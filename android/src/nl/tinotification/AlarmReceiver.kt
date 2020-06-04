@@ -43,11 +43,8 @@ class AlarmReceiver : BroadcastReceiver() {
         info.importance = intent.getStringExtra(NlTinotificationModule.CHANNEL_IMPORTANCE)
         info.channelId = intent.getStringExtra(NlTinotificationModule.CHANNEL_ID)
 
-        // Start or bring to front main activity:
-        // https://stackoverflow.com/a/5502950/1294832
-        val intent = getLaunchIntent()
-
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(tiContext, info.requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT )
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(tiContext, info.requestCode,
+                getLaunchIntent(), PendingIntent.FLAG_UPDATE_CURRENT )
 
         // https://developer.android.com/training/notify-user/build-notification
         val builder = NotificationCompat.Builder(tiContext, info.channelId)
@@ -59,7 +56,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 .setStyle(NotificationCompat.BigTextStyle()
                         .bigText(info.content))
 
-        // Note: for >= Build.VERSION_CODES.O these values are set on the channel
+        // Note: for >= Build.VERSION_CODES.O these values are set on the channel instead
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             builder.priority = when (info.importance) {
                 NlTinotificationModule.IMPORTANCE_HIGH -> NotificationCompat.PRIORITY_HIGH
@@ -121,9 +118,8 @@ class AlarmReceiver : BroadcastReceiver() {
 
     private fun getLaunchIntent(): Intent {
 
-        // Dit werkt niet als ik vanuit service de notifacties inplan...
-        // Ik weet nog niet waarom.
-        //val startActivity = Intent(TiApplication.getInstance().applicationContext, Class.forName("nl.peercode.testapp.PeercodetestappActivity"))
+        // We could also get a classname instead, but below seems to work.
+        // val startActivity = Intent(TiApplication.getInstance().applicationContext, Class.forName("nl.peercode.testapp.PeercodetestappActivity"))
 
         val startActivity = TiApplication.getInstance().applicationContext.packageManager
                 .getLaunchIntentForPackage(TiApplication.getInstance().applicationContext.packageName)
@@ -133,6 +129,5 @@ class AlarmReceiver : BroadcastReceiver() {
             startActivity.action = Intent.ACTION_MAIN
         }
         return startActivity!!
-        //return startActivity
     }
 }

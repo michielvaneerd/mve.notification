@@ -9,7 +9,8 @@ import org.appcelerator.titanium.TiApplication
 import java.lang.Exception
 
 // https://ti-qa-archive.github.io/question/129747/how-to-launch-android-app-on-boot.html
-
+// Note that this will fail when testing boot_completed broadcast event with adb (at least on an emulator)
+// But on a real device with a real restart it works.
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 

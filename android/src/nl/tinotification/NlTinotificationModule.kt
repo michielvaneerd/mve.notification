@@ -19,10 +19,6 @@ import org.appcelerator.titanium.TiApplication
 import org.appcelerator.titanium.util.TiConvert
 import java.util.*
 
-// https://github.com/hansemannn/titanium-qrcode/blob/master/android/src/ti/qrcode/TitaniumQrcodeModule.kt
-// https://dev.to/miga/using-android-studio-to-develop-titanium-modules-2jc4
-// https://jira.appcelerator.org/browse/TIMOB-25896 (Hierin een ZIP file met Kotlin module)
-
 const val LCAT = "NlTinotification"
 const val MY_CHANNEL_ID = "NlTinotification"
 const val MY_CHANNEL_NAME = "notifications"
