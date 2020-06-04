@@ -9,8 +9,8 @@
 	<android xmlns:android="http://schemas.android.com/apk/res/android">
         <manifest>
             <application>
-                <receiver android:name="nl.tinotification.AlarmReceiver" />
-                <receiver android:name="nl.tinotification.BootReceiver">
+                <receiver android:name="mve.notification.AlarmReceiver" />
+                <receiver android:name="mve.notification.BootReceiver">
                     <intent-filter>
                         <action android:name="android.intent.action.BOOT_COMPLETED" />
                         <!-- https://stackoverflow.com/a/9360557/1294832 -->
@@ -18,8 +18,10 @@
                     </intent-filter>
                 </receiver>
             </application>
-            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-            <uses-permission android:name="android.permission.WAKE_LOCK" /><!-- Necessary? -->
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <!-- FOREGROUND_SERVICE and RECEIVE_BOOT_COMPLETED only when using a service -->
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
         </manifest>
 	</android>
 </ti:module>

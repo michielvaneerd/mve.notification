@@ -1,4 +1,4 @@
-package nl.tinotification
+package mve.notification
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -14,7 +14,7 @@ import java.lang.Exception
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
-        Log.d(LCAT, "NotificationBootService started")
+        Utils.log("NotificationBootService started")
         try {
             val serviceIntent: Intent = Intent(context, Class.forName(TiApplication.getInstance().appInfo.id + ".NotificationBootServiceService"))
 

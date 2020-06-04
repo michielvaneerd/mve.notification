@@ -1,10 +1,11 @@
-package nl.tinotification
+// Inspired by and sometimes copied from https://github.com/benbahrenburg/benCoding.AlarmManager
+
+package mve.notification
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
@@ -13,22 +14,21 @@ import android.os.Build
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
-import org.appcelerator.kroll.common.Log
 import org.appcelerator.kroll.common.TiConfig
 import org.appcelerator.titanium.TiApplication
 import org.appcelerator.titanium.util.TiConvert
 import java.util.*
 
-const val LCAT = "NlTinotification"
-const val MY_CHANNEL_ID = "NlTinotification"
+const val LCAT = "MveNotification"
+const val MY_CHANNEL_ID = "MveNotification"
 const val MY_CHANNEL_NAME = "notifications"
+// See https://docs.appcelerator.com/module-apidoc/latest/android/org/appcelerator/kroll/common/TiConfig.html
+val DBG = TiConfig.LOGD
 
-@Kroll.module(name = "NlTinotification", id = "nl.tinotification")
-class NlTinotificationModule : KrollModule() {
+@Kroll.module(name = "MveNotification", id = "mve.notification")
+class MveNotificationModule : KrollModule() {
 
     companion object {
-
-        private val DBG = TiConfig.LOGD
 
         const val NOTIFICATION_REQUEST_CODE = "requestCode"
         const val NOTIFICATION_TITLE = "title"
@@ -39,6 +39,7 @@ class NlTinotificationModule : KrollModule() {
         const val NOTIFICATION_REPEAT = "repeat"
         const val NOTIFICATION_EXACT = "exact"
         const val NOTIFICATION_SOUND = "sound"
+        const val NOTIFICATION_EXTRA = "extra"
 
         const val CHANNEL_NAME = "channelName"
         const val CHANNEL_ID = "channelId"
@@ -47,10 +48,8 @@ class NlTinotificationModule : KrollModule() {
         const val CHANNEL_LIGHTS = "lights"
         const val CHANNEL_VIBRATE = "vibrate"
 
-        // TODO: yearly and monthly alarms should ALWAYS be one time alarms and in receiver schedule next one!
         @Kroll.constant
         const val YEARLY_SECONDS = 31536000
-        // TODO: yearly and monthly alarms should ALWAYS be one time alarms and in receiver schedule next one!
         @Kroll.constant
         const val MONTHLY_SECONDS = 2628000
         @Kroll.constant
@@ -85,8 +84,6 @@ class NlTinotificationModule : KrollModule() {
         @Kroll.constant
         const val IMPORTANCE_LOW = "low"
 
-
-
         @JvmStatic
         @Kroll.onAppCreate
         fun onAppCreate(app: TiApplication) {
@@ -94,12 +91,6 @@ class NlTinotificationModule : KrollModule() {
         }
 
         fun schedule(info: NotificationInfo) {
-
-            // https://developer.android.com/training/notify-user/build-notification
-            // Note:
-            // Because you must create the notification channel before posting any notifications on Android 8.0 and higher,
-            // you should execute this code as soon as your app starts.
-            // It's safe to call this repeatedly because creating an existing notification channel performs no operation.
 
             val context = TiApplication.getInstance().applicationContext
 
@@ -117,6 +108,7 @@ class NlTinotificationModule : KrollModule() {
             intent.putExtra(NOTIFICATION_SOUND, info.sound)
             intent.putExtra(CHANNEL_LIGHTS, info.lights)
             intent.putExtra(CHANNEL_VIBRATE, info.vibrate)
+            intent.putExtra(NOTIFICATION_EXTRA, info.extra)
 
             if (info.repeat != "") {
                 intent.putExtra(NOTIFICATION_REPEAT, info.repeat)
@@ -128,26 +120,26 @@ class NlTinotificationModule : KrollModule() {
             if (info.repeatInSeconds > 0) {
                 when (info.exact) {
                     REPEAT -> {
-                        Log.d(LCAT, "Scheduling inexact repeating notification for ${info.date} #${info.requestCode}")
+                        Utils.log("Scheduling inexact repeating notification for ${info.date} #${info.requestCode}")
                         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, info.date.time, (info.repeatInSeconds * 1000).toLong(), pendingIntent)
                     }
                     INEXACT -> {
-                        Log.d(LCAT, "Scheduling one inexact repeating notification for ${info.date} #${info.requestCode}")
+                        Utils.log("Scheduling one inexact repeating notification for ${info.date} #${info.requestCode}")
                         alarmManager.set(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
                     }
                     else -> {
-                        Log.d(LCAT, "Scheduling one exact repeating notification for ${info.date} #${info.requestCode}")
+                        Utils.log("Scheduling one exact repeating notification for ${info.date} #${info.requestCode}")
                         alarmManager.setExact(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
                     }
                 }
             } else {
                 when (info.exact) {
                     INEXACT -> {
-                        Log.d(LCAT, "Scheduling one inexact notification for ${info.date} #${info.requestCode}")
+                        Utils.log("Scheduling one inexact notification for ${info.date} #${info.requestCode}")
                         alarmManager.set(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
                     }
                     else -> {
-                        Log.d(LCAT, "Scheduling one exact notification for ${info.date} #${info.requestCode}")
+                        Utils.log("Scheduling one exact notification for ${info.date} #${info.requestCode}")
                         alarmManager.setExact(AlarmManager.RTC_WAKEUP, info.date.time, pendingIntent)
                     }
                 }
@@ -166,6 +158,7 @@ class NlTinotificationModule : KrollModule() {
         var exact: String = EXACT
         var requestCode: Int = 0
         var sound: Boolean = true
+        var extra: String = ""
 
         // Required for >= Build.VERSION_CODES.O
         var channelId: String = MY_CHANNEL_ID
@@ -198,7 +191,7 @@ class NlTinotificationModule : KrollModule() {
             // Note: setting a customSound overrides setting sound
             if (arg.containsKeyAndNotNull(CHANNEL_CUSTOM_SOUND)) {
                 val customSound = arg.getString(CHANNEL_CUSTOM_SOUND)
-                Log.d(LCAT, "Setting custom sound to ${customSound}")
+                Utils.log("Setting custom sound to ${customSound}")
                 channel.setSound(Uri.parse(customSound),
                         AudioAttributes.Builder()
                                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -222,13 +215,8 @@ class NlTinotificationModule : KrollModule() {
         }
     }
 
-    // Om deze te cancellen moet je dezelfde pendingintent "terughalen", dwz dezelfde requestCode en deze FLAG.
-    // Dus de intent die je als arg opstuurt hoeft niet...
     // https://stackoverflow.com/a/11682008/1294832
-    // Ook goede uitleg over hoe systeem pendingintents checkt of ze gelijk zijn of niet.
     // https://stackoverflow.com/a/61455067/1294832
-    // Dus zolang ik dezelfde requestcode meegeef, en dezelfde intent (excl extra_data) dan zou dat goed moeten zijn
-    // Maar zie ook: https://developer.android.com/training/scheduling/alarms
     @Kroll.method
     fun cancel(requestCode: Int) {
         val context = TiApplication.getInstance().applicationContext
@@ -236,7 +224,7 @@ class NlTinotificationModule : KrollModule() {
         val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)
-        Log.d(LCAT, "Notification $requestCode cancelled")
+        Utils.log("Notification $requestCode cancelled")
     }
 
     private fun repeatToSeconds(repeat: String) : Int {
@@ -287,6 +275,10 @@ class NlTinotificationModule : KrollModule() {
 
         if (arg.containsKeyAndNotNull(NOTIFICATION_EXACT)) {
             info.exact = arg.getString(NOTIFICATION_EXACT)
+        }
+
+        if (arg.containsKeyAndNotNull(NOTIFICATION_EXTRA)) {
+            info.extra = arg.getString(NOTIFICATION_EXTRA)
         }
 
         if (arg.containsKeyAndNotNull(NOTIFICATION_REPEAT_SEC)) {
