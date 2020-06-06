@@ -21,32 +21,22 @@ class BootReceiver : BroadcastReceiver() {
 
         try {
 
-            //val info = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
             val info = TiApplication.getInstance().applicationContext.packageManager
                     .getReceiverInfo(ComponentName(TiApplication.getInstance().applicationContext,
                             "mve.notification.BootReceiver"), PackageManager.GET_META_DATA)
-//            if (info == null) {
-//                Utils.log("App info voor ${context.packageName} info is null!!!!")
-//                return
-//            } else {
-//                Utils.log("Heb een app info!")
-//            }
 
             if (info.metaData == null) {
-                Utils.log("Meta data bundle voor ${context.packageName} info is null!!!!")
+                Utils.log("Meta data bundle for ${context.packageName} is null, exiting")
                 return
-            } else {
-                Utils.log("Heb een data bundle meta data!")
             }
+
             var serviceName = info.metaData.getString("serviceName")
             if (serviceName != null) {
-
-                Utils.log("Service name = $serviceName")
 
                 if (serviceName.startsWith(".")) {
                     serviceName = TiApplication.getInstance().applicationContext.packageName + serviceName
                 }
-                Utils.log("Try to start service ${serviceName}")
+                Utils.log("Trying to start service $serviceName")
 
                 //val serviceIntent: Intent = Intent(context, Class.forName(TiApplication.getInstance().appInfo.id + ".NotificationBootServiceService"))
                 val serviceIntent: Intent = Intent(TiApplication.getInstance().applicationContext, Class.forName(serviceName))
@@ -56,18 +46,11 @@ class BootReceiver : BroadcastReceiver() {
                 } else {
                     TiApplication.getInstance().applicationContext.startService(serviceIntent);
                 }
-            } else {
-                Utils.log("service name is null!")
             }
 
-
-
         } catch (e: ClassNotFoundException) {
-            // User doesn't have this service set
-            Utils.log("No NotificationBootService, so nothing to do")
+            Utils.log("No NotificationBootService, nothing to do")
         } catch (e: Exception) {
-            // What happened?
-            Utils.log("Some exception in trying to start boot service...")
             e.printStackTrace()
         }
 

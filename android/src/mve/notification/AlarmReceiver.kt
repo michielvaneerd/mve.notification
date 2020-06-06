@@ -19,6 +19,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val info = MveNotificationModule.NotificationInfo()
 
+        // All fields are set on the intent
         info.requestCode = intent.getIntExtra(MveNotificationModule.NOTIFICATION_REQUEST_CODE, 0)
         info.content = intent.getStringExtra(MveNotificationModule.NOTIFICATION_CONTENT)!!
         info.title = intent.getStringExtra(MveNotificationModule.NOTIFICATION_TITLE)!!
@@ -30,40 +31,32 @@ class AlarmReceiver : BroadcastReceiver() {
         info.sound = intent.getBooleanExtra(MveNotificationModule.NOTIFICATION_SOUND, true)
         info.lights = intent.getBooleanExtra(MveNotificationModule.CHANNEL_LIGHTS, true)
         info.vibrate = intent.getBooleanExtra(MveNotificationModule.CHANNEL_VIBRATE, true)
-        info.startActivityName = intent.getStringExtra(MveNotificationModule.NOTIFICATION_START_ACTIVITY_NAME)!!
-
+        info.repeat = intent.getStringExtra(MveNotificationModule.NOTIFICATION_REPEAT)!!
+        info.customSound = intent.getStringExtra(MveNotificationModule.CHANNEL_CUSTOM_SOUND)!!
         info.extra = intent.getStringExtra(MveNotificationModule.NOTIFICATION_EXTRA) ?: ""
+        info.importance = intent.getStringExtra(MveNotificationModule.CHANNEL_IMPORTANCE)!!
+        info.channelId = intent.getStringExtra(MveNotificationModule.CHANNEL_ID)!!
 
-        if (intent.hasExtra(MveNotificationModule.NOTIFICATION_REPEAT) && intent.getStringArrayExtra(MveNotificationModule.NOTIFICATION_REPEAT) != null) {
-            info.repeat = intent.getStringExtra(MveNotificationModule.NOTIFICATION_REPEAT)!!
-        }
+        //info.startActivityName = intent.getStringExtra(MveNotificationModule.NOTIFICATION_START_ACTIVITY_NAME)!!
 
-        info.customSound = intent.getStringExtra(MveNotificationModule.CHANNEL_CUSTOM_SOUND) ?: ""
-
-        if (intent.hasExtra(MveNotificationModule.CHANNEL_IMPORTANCE) && intent.getStringArrayExtra(MveNotificationModule.CHANNEL_IMPORTANCE) != null) {
-            info.importance = intent.getStringExtra(MveNotificationModule.CHANNEL_IMPORTANCE)!!
-        }
-
-        if (intent.hasExtra(MveNotificationModule.CHANNEL_ID) && intent.getStringArrayExtra(MveNotificationModule.CHANNEL_ID) != null) {
-            info.channelId = intent.getStringExtra(MveNotificationModule.CHANNEL_ID)!!
-        }
-
-        val launchIntent = Intent(TiApplication.getInstance().applicationContext, Class.forName("nl.peercode.testapp.PeercodetestappActivity"))
         //val launchIntent = Intent(TiApplication.getInstance().applicationContext, Class.forName(info.startActivityName))
-        //val launchIntent = TiApplication.getInstance().applicationContext.packageManager
-        //        .getLaunchIntentForPackage(TiApplication.getInstance().applicationContext.packageName)
-        Utils.log("Create launchIntent for ${info.startActivityName}")
+        val launchIntent = TiApplication.getInstance().applicationContext.packageManager
+                .getLaunchIntentForPackage(TiApplication.getInstance().applicationContext.packageName)
 
+        if (launchIntent != null) {
             launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             launchIntent.addCategory(Intent.CATEGORY_LAUNCHER)
             launchIntent.action = Intent.ACTION_MAIN
             if (info.extra != "") {
                 launchIntent.putExtra(MveNotificationModule.NOTIFICATION_EXTRA, info.extra)
             }
+        } else {
+            Utils.log("Cannot create launch intent!")
+        }
 
-
+        // This will crash if launchIntent == null...
         val pendingIntent: PendingIntent = PendingIntent.getActivity(TiApplication.getInstance().applicationContext, info.requestCode,
-                launchIntent, PendingIntent.FLAG_UPDATE_CURRENT )
+                launchIntent!!, PendingIntent.FLAG_UPDATE_CURRENT )
 
         // https://developer.android.com/training/notify-user/build-notification
         val builder = NotificationCompat.Builder(TiApplication.getInstance().applicationContext, info.channelId)
@@ -118,9 +111,6 @@ class AlarmReceiver : BroadcastReceiver() {
             // Make sure we schedule a date in the future, because maybe the device has been off for a long time
             val now = Date()
 
-            // We always have a previous date when we are in the receiver so check for < now is not necessary
-            // var x = if (info.date < now) ceil(((now.time - info.date.time) / repeatInMs).toDouble()).toInt() else 1
-
             // Add 1 because info.date was the previous date and we now have to schedule the next one
             val x = ceil(((now.time - info.date.time) / repeatInMs).toDouble()).toInt() + 1
 
@@ -134,23 +124,4 @@ class AlarmReceiver : BroadcastReceiver() {
 
     }
 
-
-//    private fun getLaunchIntent(extra: String): Intent {
-//
-//        // We could also get a classname instead, but below seems to work.
-//        val launchIntent = Intent(TiApplication.getInstance().applicationContext, Class.forName("nl.peercode.testapp.PeercodetestappActivity"))
-//
-//        // context.getPackageManager().getLaunchIntentForPackage(context.getApplicationContext().getPackageName());
-//        //val launchIntent = TiApplication.getInstance().applicationContext.packageManager
-//          //      .getLaunchIntentForPackage(TiApplication.getInstance().applicationContext.packageName)
-//        if (launchIntent != null) {
-//            launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-//            launchIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-//            launchIntent.action = Intent.ACTION_MAIN
-//            if (extra != "") {
-//                launchIntent.putExtra(MveNotificationModule.NOTIFICATION_EXTRA, extra)
-//            }
-//        }
-//        return launchIntent
-//    }
 }

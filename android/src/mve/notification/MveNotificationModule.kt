@@ -42,7 +42,7 @@ class MveNotificationModule : KrollModule() {
         const val NOTIFICATION_EXTRA = "extra"
         // https://github.com/benbahrenburg/benCoding.AlarmManager/issues/13
         // https://github.com/benbahrenburg/benCoding.AlarmManager/pull/59
-        const val NOTIFICATION_START_ACTIVITY_NAME = "startActivityName"
+        //const val NOTIFICATION_START_ACTIVITY_NAME = "startActivityName"
 
         const val CHANNEL_NAME = "channelName"
         const val CHANNEL_ID = "channelId"
@@ -110,11 +110,8 @@ class MveNotificationModule : KrollModule() {
             intent.putExtra(CHANNEL_LIGHTS, info.lights)
             intent.putExtra(CHANNEL_VIBRATE, info.vibrate)
             intent.putExtra(NOTIFICATION_EXTRA, info.extra)
-            intent.putExtra(NOTIFICATION_START_ACTIVITY_NAME, info.startActivityName)
-
-            if (info.repeat != "") {
-                intent.putExtra(NOTIFICATION_REPEAT, info.repeat)
-            }
+            //intent.putExtra(NOTIFICATION_START_ACTIVITY_NAME, info.startActivityName)
+            intent.putExtra(NOTIFICATION_REPEAT, info.repeat)
 
             val pendingIntent = PendingIntent.getBroadcast(TiApplication.getInstance().applicationContext,
                     info.requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -152,12 +149,6 @@ class MveNotificationModule : KrollModule() {
 
     }
 
-    override fun onStart(activity: Activity?) {
-        Utils.log("Module started " + TiApplication.getInstance().applicationContext.packageName + "." + TiApplication.getAppRootOrCurrentActivity().javaClass.simpleName)
-        super.onStart(activity)
-
-    }
-
     class NotificationInfo {
         var repeatInSeconds: Int = 0
         var repeat: String = ""
@@ -169,7 +160,7 @@ class MveNotificationModule : KrollModule() {
         var requestCode: Int = 0
         var sound: Boolean = true
         var extra: String = ""
-        var startActivityName: String = ""
+        //var startActivityName: String = ""
 
         // Required for >= Build.VERSION_CODES.O
         var channelId: String = MY_CHANNEL_ID
@@ -253,13 +244,14 @@ class MveNotificationModule : KrollModule() {
     fun scheduleNotification(arg: KrollDict) {
 
         val info = NotificationInfo()
+
         info.title = arg.getString(NOTIFICATION_TITLE)
         info.content = arg.getString(NOTIFICATION_CONTENT)
         info.date = TiConvert.toDate(arg.getValue(NOTIFICATION_DATE))
         // https://romannurik.github.io/AndroidAssetStudio/icons-notification
         info.icon = arg.getInt(NOTIFICATION_ICON)
         info.requestCode = arg.getInt(NOTIFICATION_REQUEST_CODE)
-        info.startActivityName = arg.getString(NOTIFICATION_START_ACTIVITY_NAME)
+        //info.startActivityName = arg.getString(NOTIFICATION_START_ACTIVITY_NAME)
 
         if (arg.containsKeyAndNotNull(CHANNEL_LIGHTS)) {
             info.lights = arg.getBoolean(CHANNEL_LIGHTS)
