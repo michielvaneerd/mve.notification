@@ -4,28 +4,31 @@ This Titanium mve.notification module makes it possible to schedule local notifi
 
 ## Getting Started
 
-1. Require the module when needed.
-2. Call `setChannel` once.
-3. Call `scheduleNotification` for each notification you want to schedule.
+1. Build this project or download the module from the `dist` directory.
+2. Require the module.
+3. Call `setChannel` once.
+4. Call `scheduleNotification` for each notification you want to schedule.
 
 ## API
 
-### setChannel
+### setChannel(arg)
 
-* Optional String `channelId` - Must be unique in your app.
-* Optional String `channelName` - Displayed in the Android settings,
-* Optional String `importance` - Possible values: `default`, `high`, `low`.
+Notifications should be scheduled inside a channel. So first call this once before scheduling notifications.
+
+* Optional String `channelId` - Must be unique inside your app.
+* Optional String `channelName` - Human readable name.
+* Optional String `importance` - Possible values: `default` (default), `high`, `low`.
 * Optional String `customSound` - Must be mp3 file in `app/platform/android/res/raw/myfile.mp3` and set with `Ti.Filesystem.getResRawDirectory() + "myfile"`. Note *without* extension!
-* Optional Boolean `lights` - If lights should be on or off.
-* Optional Boolean `vibrate` - If device should vibrate.
-* Optional Boolean `sound` - If default sound should be played. Note that `customSound` overrides `sound`.
+* Optional Boolean `lights` - If lights should be on or off. Default `true`.
+* Optional Boolean `vibrate` - If device should vibrate. Default `true`.
+* Optional Boolean `sound` - If default sound should be played. Note that `customSound` overrides `sound`. Default `true`.
 
-### scheduleNotification
+### scheduleNotification(arg)
 
-* Required Int `requestCode` - ID of this notification.
-* Required String `title`
-* Required String `content`
-* Required Date `date`
+* Required Int `requestCode` - ID of notification.
+* Required String `title` - Title of notification.
+* Required String `content` - Content of notification.
+* Required Date `date` - Date of notification.
 * Required Int `icon` - Place icon in the `app/platform/android/res/drawable[-xxx]` directories and call with `Ti.App.Android.R.drawable`. For example the file `app/platform/android/res/drawable/myicon.png` should be set with `Ti.App.Android.R.drawable.myicon`. Note *without* extension!
 * Optional Boolean `lights` - See `setChannel`
 * Optional Boolean `vibrate` - See `setChannel`
@@ -33,79 +36,39 @@ This Titanium mve.notification module makes it possible to schedule local notifi
 * Optional String `customSound` - See `setChannel`
 * Optional String `channelId` - If you set a `channelId` in `setChannel` you must use this here as well.
 * Optional String `importance` - See `setChannel`
-* Optional String `exact` - Possible values: `exact`, `inexact`, `repeat`. See below for more information.
+* Optional String `exact` - Possible values: `exact` (default), `inexact`, `repeat`. See below for more information.
 * Optional String `extra` - Some extra data you want to send to the activity. See below for more information.
-* Optional Int `repeatInSeconds` - If you want to have a repeating notification, you can specify the interval in seconds.
-* Optional String `repeat` - Possible values: `hourly`, `daily`, `weekly`, `monthly`, `yearly`. Note that this will override `repeatInSeconds`.
+* Optional Int `repeatInSeconds` - If you want to have a repeating notification, you can specify the interval in seconds. Default is `0` meaning no repeat.
+* Optional String `repeat` - Possible values: `hourly`, `daily`, `weekly`, `monthly`, `yearly`. Note that this will override `repeatInSeconds`. Default is an empty string, meaning no repeat.
 
-### Installing
+#### arg.exact
 
-A step by step series of examples that tell you how to get a development env running
+* `exact` = `exact` - Notification is delivered exactly on time. This has more impact on the battery life than inexact notifications. Can be used for one time and repeated notifications.
+* `exact` = `inexact` - Notification is batched up with other notifications. This preserves the battery life. Can be used for one time and repeated notifications.
+* `exact` = `repeat` - Can only be used for repeated notifications. This preserves the battery life.
 
-Say what the step will be
+#### arg.extra
 
-```
-Give the example
-```
+You can set the `extra` field to some string. This will be available in the Intent of your activity. See example.
 
-And repeat
+### cancel(requestCode)
 
-```
-until finished
-```
+Cancels scheduled notifications. Use the same `requestCode` as you used to schedule this notification.
 
-End with an example of getting some data out of the system or using it for a little demo
+* Required Int `requestCode` - ID of notification.
 
-## Running the tests
+## Building this module
 
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
+Clone this project. Go inside the android directory and do:
 
 ```
-Give an example
+ti build -p android --build-only
 ```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU GPLv3 License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+Heavily inspired by [benCoding.AlarmManager](https://github.com/benbahrenburg/benCoding.AlarmManager).
