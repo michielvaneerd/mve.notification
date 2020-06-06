@@ -1,0 +1,13 @@
+<Alloy>
+	<Window onOpen="onWindowOpen" layout="vertical">
+		<TextField class="rowField" id="titleField" hintText="Title" />
+		<TextField class="rowField" id="contentField" hintText="Content" />
+		<TextField class="rowField" id="repeatInSecondsField" hintText="Repeat in seconds" />
+		<TextField class="rowField" id="repeatField" hintText="Repeat" />
+		<TextField class="rowField" id="exactField" hintText="Exact" value="exact" />
+		<TextField class="rowField" id="dateField" hintText="Start in seconds from now" value="10" />
+		<TextField class="rowField" id="requestCodeField" hintText="Request code" value="1" />
+		<Button class="rowField" onClick="onStart">Start</Button>
+		<Button class="rowField" onClick="onCancel">Cancel</Button>
+	</Window>
+</Alloy>

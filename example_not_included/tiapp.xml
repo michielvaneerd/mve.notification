@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ti:app xmlns:ti="http://ti.appcelerator.org">
+	<id>mve.notification.test</id>
+	<name>MveNotificationTest</name>
+	<version>1.0</version>
+	<publisher>not specified</publisher>
+	<url/>
+	<description/>
+	<copyright>not specified</copyright>
+	<icon>appicon.png</icon>
+	<fullscreen>false</fullscreen>
+	<navbar-hidden>false</navbar-hidden>
+	<analytics>false</analytics>
+	<guid>b82cd8ff-76e7-44e3-9149-306099e3d5dd</guid>
+	<property name="ti.ui.defaultunit" type="string">dp</property>
+	<property name="run-on-main-thread" type="bool">true</property>
+	<!-- https://docs.appcelerator.com/module-apidoc/latest/android/org/appcelerator/kroll/common/TiConfig.html#LOGD -->
+	<property name="ti.android.debug" type="bool">true</property>
+
+	<!-- https://github.com/benbahrenburg/benCoding.AlarmManager/pull/92 -->
+	<!--<property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>-->
+
+	<!--
+	<property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>
+    <property name="ti.android.bug2373.disableDetection" type="bool">true</property>
+    <property name="ti.android.bug2373.restartDelay" type="int">500</property>
+    <property name="ti.android.bug2373.finishDelay" type="int">0</property>
+    <property name="ti.android.bug2373.skipAlert" type="bool">true</property>
+    <property name="ti.android.bug2373.message">Initializing</property>
+    <property name="ti.android.bug2373.title">Restart Required</property>
+    <property name="ti.android.bug2373.buttonText">Continue</property>
+	-->
+	
+	<ios>
+		<enable-launch-screen-storyboard>true</enable-launch-screen-storyboard>
+		<use-app-thinning>true</use-app-thinning>
+		<plist>
+			<dict>
+				<key>UISupportedInterfaceOrientations~iphone</key>
+				<array>
+					<string>UIInterfaceOrientationPortrait</string>
+				</array>
+				<key>UISupportedInterfaceOrientations~ipad</key>
+				<array>
+					<string>UIInterfaceOrientationPortrait</string>
+					<string>UIInterfaceOrientationPortraitUpsideDown</string>
+					<string>UIInterfaceOrientationLandscapeLeft</string>
+					<string>UIInterfaceOrientationLandscapeRight</string>
+				</array>
+				<key>UIRequiresPersistentWiFi</key>
+				<false/>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+				<key>UIStatusBarHidden</key>
+				<false/>
+				<key>UIStatusBarStyle</key>
+				<string>UIStatusBarStyleDefault</string>
+			</dict>
+		</plist>
+	</ios>
+	<android android:permission="android.permission.RECEIVE_BOOT_COMPLETED" xmlns:android="http://schemas.android.com/apk/res/android">
+		<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1">
+
+			<!-- Only necessary if we use a service for the boot_completed event -->
+			<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+			<application>
+				<receiver android:name="mve.notification.BootReceiver">
+                    <intent-filter>
+                        <action android:name="android.intent.action.BOOT_COMPLETED" />
+                        <!-- https://stackoverflow.com/a/9360557/1294832 -->
+                        <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+						<category android:name="android.intent.category.DEFAULT" />
+                    </intent-filter>
+					<meta-data android:name="serviceName" android:value=".NotificationBootServiceService" />
+                </receiver>
+			</application>
+
+		</manifest>
+		<services>
+ 			<service url="NotificationBootService.js" />
+ 		</services>
+	</android>
+	<modules>
+		<module platform="android">mve.notification</module>
+	</modules>
+	<deployment-targets>
+		<target device="android">true</target>
+		<target device="ipad">false</target>
+		<target device="iphone">true</target>
+	</deployment-targets>
+	<sdk-version>9.0.2.GA</sdk-version>
+<plugins><plugin version="1.0">ti.alloy</plugin>
+</plugins>
+</ti:app>

@@ -1,0 +1,13 @@
+"Window": {
+	backgroundColor: "white"
+},
+"TextField": {
+	backgroundColor: "#A0A0A0",
+	color: "white",
+	hintTextColor: "#F0F0F0"
+},
+".rowField": {
+	top: 10,
+	left: 10,
+	right: 10
+}

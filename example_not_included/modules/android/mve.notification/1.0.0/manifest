@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 4
+architectures: arm64-v8a armeabi-v7a x86 x86_64
+description: mve.notification
+author: Michiel van Eerd
+license: Specify your license
+copyright: Copyright (c) 2020 by Your Company
+
+# these should not be edited
+name: mve.notification
+moduleid: mve.notification
+guid: 8e54e1ef-c8b1-4cd2-b76f-d5a03a500a14
+platform: android
+minsdk: 9.0.2.GA
