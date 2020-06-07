@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import org.appcelerator.kroll.KrollDict
 import org.appcelerator.titanium.TiApplication
 import java.util.*
 import kotlin.math.ceil
@@ -37,36 +38,47 @@ class AlarmReceiver : BroadcastReceiver() {
         info.importance = intent.getStringExtra(MveNotificationModule.CHANNEL_IMPORTANCE)!!
         info.channelId = intent.getStringExtra(MveNotificationModule.CHANNEL_ID)!!
 
-        //info.startActivityName = intent.getStringExtra(MveNotificationModule.NOTIFICATION_START_ACTIVITY_NAME)!!
-
-        //val launchIntent = Intent(TiApplication.getInstance().applicationContext, Class.forName(info.startActivityName))
-        val launchIntent = TiApplication.getInstance().applicationContext.packageManager
-                .getLaunchIntentForPackage(TiApplication.getInstance().applicationContext.packageName)
-
-        if (launchIntent != null) {
-            launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            launchIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-            launchIntent.action = Intent.ACTION_MAIN
-            if (info.extra != "") {
-                launchIntent.putExtra(MveNotificationModule.NOTIFICATION_EXTRA, info.extra)
-            }
-        } else {
-            Utils.log("Cannot create launch intent!")
+        if (intent.hasExtra(MveNotificationModule.NOTIFICATION_ACTION1)) {
+            @Suppress("UNCHECKED_CAST")
+            info.action1 = intent.getSerializableExtra(MveNotificationModule.NOTIFICATION_ACTION1) as HashMap<String, Any>
+        }
+        if (intent.hasExtra(MveNotificationModule.NOTIFICATION_ACTION2)) {
+            @Suppress("UNCHECKED_CAST")
+            info.action2 = intent.getSerializableExtra(MveNotificationModule.NOTIFICATION_ACTION2) as HashMap<String, Any>
+        }
+        if (intent.hasExtra(MveNotificationModule.NOTIFICATION_ACTION3)) {
+            @Suppress("UNCHECKED_CAST")
+            info.action3 = intent.getSerializableExtra(MveNotificationModule.NOTIFICATION_ACTION3) as HashMap<String, Any>
         }
 
-        // This will crash if launchIntent == null...
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(TiApplication.getInstance().applicationContext, info.requestCode,
-                launchIntent!!, PendingIntent.FLAG_UPDATE_CURRENT )
+        //info.startActivityName = intent.getStringExtra(MveNotificationModule.NOTIFICATION_START_ACTIVITY_NAME)!!
 
         // https://developer.android.com/training/notify-user/build-notification
         val builder = NotificationCompat.Builder(TiApplication.getInstance().applicationContext, info.channelId)
                 .setSmallIcon(info.icon)
                 .setContentTitle(info.title)
                 .setContentText(info.content)
-                .setContentIntent(pendingIntent)
+                .setContentIntent(createPendingIntent(info.requestCode,
+                        null, null, info.extra))
                 .setAutoCancel(true)
                 .setStyle(NotificationCompat.BigTextStyle()
                         .bigText(info.content))
+
+        if (info.action1 != null) {
+            builder.addAction(R.drawable.ic_stat_onesignal_default, info.action1!!["title"].toString(),
+                    createPendingIntent(info.requestCode, MveNotificationModule.NOTIFICATION_ACTION1,
+                            info.action1!!["extra"].toString(), info.extra))
+        }
+        if (info.action2 != null) {
+            builder.addAction(R.drawable.btn_check_buttonless_on_144, info.action2!!["title"].toString(),
+                    createPendingIntent(info.requestCode, MveNotificationModule.NOTIFICATION_ACTION2,
+                            info.action2!!["extra"].toString(), info.extra))
+        }
+        if (info.action3 != null) {
+            builder.addAction(R.drawable.btn_more_144, info.action3!!["title"].toString(),
+                    createPendingIntent(info.requestCode, MveNotificationModule.NOTIFICATION_ACTION3,
+                            info.action3!!["extra"].toString(), info.extra))
+        }
 
         // Note: for >= Build.VERSION_CODES.O these values are set on the channel instead
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -122,6 +134,28 @@ class AlarmReceiver : BroadcastReceiver() {
 
         }
 
+    }
+
+    private fun createPendingIntent(requestCode: Int, extraKey: String?, extraValue: String?, extra: String?) : PendingIntent {
+
+        val launchIntent = TiApplication.getInstance().applicationContext.packageManager
+                .getLaunchIntentForPackage(TiApplication.getInstance().applicationContext.packageName)
+
+        if (launchIntent != null) {
+            launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            launchIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+            launchIntent.action = Intent.ACTION_MAIN
+            if (extra != null && extra != "") {
+                launchIntent.putExtra(MveNotificationModule.NOTIFICATION_EXTRA, extra)
+            }
+            if (extraKey != null && extraValue != null && extraValue != "") {
+                launchIntent.putExtra(extraKey, extraValue)
+                launchIntent.action = extraKey // If we don't add this, the extra fields will be the same for all intents.
+            }
+
+        }
+        return PendingIntent.getActivity(TiApplication.getInstance().applicationContext, requestCode,
+                launchIntent!!, PendingIntent.FLAG_UPDATE_CURRENT) as PendingIntent
     }
 
 }

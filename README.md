@@ -40,6 +40,23 @@ Notifications should be scheduled inside a channel. So first call this once befo
 * Optional String `extra` - Some extra data you want to send to the activity. See below for more information.
 * Optional Int `repeatInSeconds` - If you want to have a repeating notification, you can specify the interval in seconds. Default is `0` meaning no repeat.
 * Optional String `repeat` - Possible values: `hourly`, `daily`, `weekly`, `monthly`, `yearly`. Note that this will override `repeatInSeconds`. Default is an empty string, meaning no repeat.
+* Option Object `action1` - Action button 1. See below.
+* Option Object `action2` - Action button 2. See below.
+* Option Object `action3` - Action button 3. See below.
+
+#### arg.action1, arg.action2 and arg.action3
+
+You can add up to 3 action buttons by specifying the title and some extra data.
+
+```
+{
+    title: "Snooze",
+    extra: ""
+}
+```
+
+See example for how to get this information inside your app.
+
 
 #### arg.exact
 
@@ -51,9 +68,15 @@ Notifications should be scheduled inside a channel. So first call this once befo
 
 You can set the `extra` field to some string. This will be available in the Intent of your activity. See example.
 
-### cancel(requestCode)
+### cancelScheduledNotification(requestCode)
 
 Cancels scheduled notifications. Use the same `requestCode` as you used to schedule this notification.
+
+* Required Int `requestCode` - ID of notification.
+
+### cancelActiveNotification(requestCode)
+
+Cancels active notification. Use the same `requestCode` as you used to schedule this notification.
 
 * Required Int `requestCode` - ID of notification.
 

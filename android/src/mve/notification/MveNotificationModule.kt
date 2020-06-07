@@ -8,6 +8,7 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
@@ -43,6 +44,10 @@ class MveNotificationModule : KrollModule() {
         // https://github.com/benbahrenburg/benCoding.AlarmManager/issues/13
         // https://github.com/benbahrenburg/benCoding.AlarmManager/pull/59
         //const val NOTIFICATION_START_ACTIVITY_NAME = "startActivityName"
+
+        const val NOTIFICATION_ACTION1 = "action1"
+        const val NOTIFICATION_ACTION2 = "action2"
+        const val NOTIFICATION_ACTION3 = "action3"
 
         const val CHANNEL_NAME = "channelName"
         const val CHANNEL_ID = "channelId"
@@ -113,6 +118,16 @@ class MveNotificationModule : KrollModule() {
             //intent.putExtra(NOTIFICATION_START_ACTIVITY_NAME, info.startActivityName)
             intent.putExtra(NOTIFICATION_REPEAT, info.repeat)
 
+            if (info.action1 != null) {
+                intent.putExtra(NOTIFICATION_ACTION1, info.action1)
+            }
+            if (info.action2 != null) {
+                intent.putExtra(NOTIFICATION_ACTION2, info.action2)
+            }
+            if (info.action3 != null) {
+                intent.putExtra(NOTIFICATION_ACTION3, info.action3)
+            }
+
             val pendingIntent = PendingIntent.getBroadcast(TiApplication.getInstance().applicationContext,
                     info.requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
             val alarmManager: AlarmManager = TiApplication.getInstance().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -161,6 +176,10 @@ class MveNotificationModule : KrollModule() {
         var sound: Boolean = true
         var extra: String = ""
         //var startActivityName: String = ""
+
+        var action1: HashMap<String, Any>? = null
+        var action2: HashMap<String, Any>? = null
+        var action3: HashMap<String, Any>? = null
 
         // Required for >= Build.VERSION_CODES.O
         var channelId: String = MY_CHANNEL_ID
@@ -231,13 +250,18 @@ class MveNotificationModule : KrollModule() {
     // https://stackoverflow.com/a/11682008/1294832
     // https://stackoverflow.com/a/61455067/1294832
     @Kroll.method
-    fun cancel(requestCode: Int) {
+    fun cancelScheduledNotification(requestCode: Int) {
         val context = TiApplication.getInstance().applicationContext
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)
         Utils.log("Notification $requestCode cancelled")
+    }
+
+    @Kroll.method
+    fun cancelActiveNotification(requestCode: Int) {
+        NotificationManagerCompat.from(TiApplication.getInstance()).cancel(requestCode)
     }
 
     @Kroll.method
@@ -252,6 +276,18 @@ class MveNotificationModule : KrollModule() {
         info.icon = arg.getInt(NOTIFICATION_ICON)
         info.requestCode = arg.getInt(NOTIFICATION_REQUEST_CODE)
         //info.startActivityName = arg.getString(NOTIFICATION_START_ACTIVITY_NAME)
+
+        if (arg.containsKeyAndNotNull(NOTIFICATION_ACTION1)) {
+            info.action1 = arg.getKrollDict(NOTIFICATION_ACTION1) as HashMap<String, Any>
+        }
+
+        if (arg.containsKeyAndNotNull(NOTIFICATION_ACTION2)) {
+            info.action2 = arg.getKrollDict(NOTIFICATION_ACTION2) as HashMap<String, Any>
+        }
+
+        if (arg.containsKeyAndNotNull(NOTIFICATION_ACTION3)) {
+            info.action3 = arg.getKrollDict(NOTIFICATION_ACTION3) as HashMap<String, Any>
+        }
 
         if (arg.containsKeyAndNotNull(CHANNEL_LIGHTS)) {
             info.lights = arg.getBoolean(CHANNEL_LIGHTS)
