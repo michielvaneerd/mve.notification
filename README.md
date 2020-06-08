@@ -1,13 +1,13 @@
 # mve.notification
 
-This Titanium mve.notification module makes it possible to schedule local notifications on Android.
+This Titanium module makes it possible to schedule local notifications on Android.
 
 ## Getting Started
 
 1. Build this project or download the module from the `dist` directory.
 2. Require the module.
 3. Call `setChannel` once.
-4. Call `scheduleNotification` for each notification you want to schedule.
+4. Call `scheduleNotification` for each notification (or repeated notifications) you want to schedule.
 
 ## API
 
@@ -55,8 +55,7 @@ You can add up to 3 action buttons by specifying the title and some extra data.
 }
 ```
 
-See example for how to get this information inside your app.
-
+See the [example project](example_not_included/) for how to get this information inside your app.
 
 #### arg.exact
 
@@ -79,6 +78,52 @@ Cancels scheduled notifications. Use the same `requestCode` as you used to sched
 Cancels active notification. Use the same `requestCode` as you used to schedule this notification.
 
 * Required Int `requestCode` - ID of notification.
+
+## Rescheduling notifications after reboot
+
+Android removes all scheduled notifications after a reboot. This means you have to reschedule them yourself after a reboot.
+To make this easier this module provides a BroadcastReceiver that you can link to the BOOT_COMPLETED event and that can start
+a service in which you can reschedule the notifications. Also see the example for a full implementation, but these are the steps:
+
+### 1. Add permissions to [tiapp.xml](example_not_included/tiapp.xml)
+
+Add the following permissions to the tiapp.xml file:
+
+```
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+```
+
+### 2. Create a service
+
+Create a service and put this file in the `app/lib` directory.
+
+See the [service](example_not_included/app/lib/NotificationBootService.js) in the example project.
+
+This service will be called after the device has rebooted. Here you can reschedule your notifications.
+
+### 3. Add service to [tiapp.xml](example_not_included/tiapp.xml)
+
+```
+<services>
+    <service url="NotificationBootService.js" />
+</services>
+```
+
+### 4. Add the receiver to [tiapp.xml](example_not_included/tiapp.xml)
+
+Add the receiver to the tiapp.xml file and set the name of the service to the `serviceName` meta data. Notice you have to add "Service" after the name of the service. This is because Titanium adds this to the name as well as you can see in the generated AndroidManifest.xml file.
+
+```
+<receiver android:name="mve.notification.BootReceiver">
+    <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+        <category android:name="android.intent.category.DEFAULT" />
+    </intent-filter>
+    <meta-data android:name="serviceName" android:value=".NotificationBootServiceService" />
+</receiver>
+```
 
 ## Building this module
 
