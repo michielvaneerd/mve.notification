@@ -1,5 +1,5 @@
 #!/bin/bash
 
 ti build -p android --build-only
-unzip dist/mve.notification-android-*.zip -d dist/
+unzip -o dist/mve.notification-android-*.zip -d ../example_not_included/
 
